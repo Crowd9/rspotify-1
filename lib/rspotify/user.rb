@@ -425,9 +425,8 @@ module RSpotify
 
     def subscribe_to_shows!(shows)
       shows_ids = shows.map(&:id)
-      url = 'me/shows'
-      request_body = shows_ids.inspect
-      User.oauth_put(@id, url, request_body)
+      url = "me/shows?ids=#{shows_ids.join ','}"
+      User.oauth_put(@id, url, {}.to_json)
     end
 
     def subscribed_to_shows(limit: 20, offset: 0, market: nil)
