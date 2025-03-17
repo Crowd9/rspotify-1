@@ -38,6 +38,16 @@ module RSpotify
       response = RestClient.post(TOKEN_URI, request_body, RSpotify.send(:auth_header))
       response = JSON.parse(response)
       @@users_credentials[user_id]['token'] = response['access_token']
+      access_refresh_proc = @@users_credentials[user_id]['access_refresh_callback']
+      # If the access token expires and a new one is granted via the refresh
+      # token, then this proc will be called with two parameters:
+      # new_access_token and token_lifetime (in seconds)
+      # The purpose is to allow the calling environment to invoke some action,
+      # such as persisting the new access token somewhere, when the new token
+      # is generated.
+      if (access_refresh_proc.respond_to? :call)
+        access_refresh_proc.call(response['access_token'], response['expires_in'])
+      end
     rescue RestClient::BadRequest => e
       raise e
     end
@@ -51,8 +61,11 @@ module RSpotify
     private_class_method :extract_custom_headers
 
     def self.oauth_header(user_id)
+      token = @@users_credentials.dig(user_id, 'token')
+      # Fallback for playlist.add_tracks! if no credentials for the playlist owner exist
+      token ||= @@users_credentials.values.dig(0, 'token')
       {
-        'Authorization' => "Bearer #{@@users_credentials[user_id]['token']}",
+        'Authorization' => "Bearer #{token}",
         'Content-Type'  => 'application/json'
       }
     end

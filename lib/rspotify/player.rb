@@ -73,6 +73,37 @@ module RSpotify
       User.oauth_put(@user.id, url, params.to_json)
     end
 
+    # Get the user’s current playback queue
+    #
+    # @example
+    #           player = user.player
+    #           player.next_up
+    def next_up
+      url = "me/player/queue"
+      response = User.oauth_get(@user.id, url)
+      return response if RSpotify.raw_response
+
+      response["queue"].map do |item|
+        type_class = RSpotify.const_get(item["type"].capitalize)
+        type_class.new item
+      end
+    end
+
+    # Add an item to the end of the user’s current playback queue
+    # If `device_id` is not passed, the currently active spotify app will be triggered
+    # 
+    # @param [String] device_id the ID of the device to set the repeat state on.
+    # @param [String] uri       the spotify uri of the track to be queued
+    #
+    # @example
+    #           player = user.player
+    #           player.queue("spotify:track:4iV5W9uYEdYUVa79Axb7Rh")
+    def queue(device_id = nil, uri)
+      url = "me/player/queue?uri=#{uri}"
+      url = device_id.nil? ? url : "#{url}&device_id=#{device_id}"
+      User.oauth_post(@user.id, url, {})
+    end
+
     # Toggle the current user's player repeat status.
     # If `device_id` is not passed, the currently active spotify app will be triggered.
     # If `state` is not passed, the currently active context will be set to repeat.
