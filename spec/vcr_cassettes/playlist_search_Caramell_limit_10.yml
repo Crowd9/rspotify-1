@@ -160,7 +160,7 @@ http_interactions:
   recorded_at: Mon, 10 Dec 2018 18:49:07 GMT
 - request:
     method: get
-    uri: https://api.spotify.com/v1/users/%5Bsop%5Drocky/playlists/7yCLhd5Lq1tKK7oxq0d4km
+    uri: https://api.spotify.com/v1/playlists/7yCLhd5Lq1tKK7oxq0d4km
     body:
       encoding: US-ASCII
       string: ''
