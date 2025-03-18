@@ -2,7 +2,7 @@
 http_interactions:
 - request:
     method: get
-    uri: https://api.spotify.com/v1/playlists/4LO89Y0ydu8li9Phq2iwKT/followers/contains?ids=spotify,wizzler
+    uri: https://api.spotify.com/v1/users/spotify/playlists/4LO89Y0ydu8li9Phq2iwKT/followers/contains?ids=spotify,wizzler
     body:
       encoding: US-ASCII
       string: ''
