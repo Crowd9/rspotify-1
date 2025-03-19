@@ -38,6 +38,16 @@ module RSpotify
       response = RestClient.post(TOKEN_URI, request_body, RSpotify.send(:auth_header))
       response = JSON.parse(response)
       @@users_credentials[user_id]['token'] = response['access_token']
+      access_refresh_proc = @@users_credentials[user_id]['access_refresh_callback']
+      # If the access token expires and a new one is granted via the refresh
+      # token, then this proc will be called with two parameters:
+      # new_access_token and token_lifetime (in seconds)
+      # The purpose is to allow the calling environment to invoke some action,
+      # such as persisting the new access token somewhere, when the new token
+      # is generated.
+      if (access_refresh_proc.respond_to? :call)
+        access_refresh_proc.call(response['access_token'], response['expires_in'])
+      end
     rescue RestClient::BadRequest => e
       raise e
     end
@@ -51,8 +61,11 @@ module RSpotify
     private_class_method :extract_custom_headers
 
     def self.oauth_header(user_id)
+      token = @@users_credentials.dig(user_id, 'token')
+      # Fallback for playlist.add_tracks! if no credentials for the playlist owner exist
+      token ||= @@users_credentials.values.dig(0, 'token')
       {
-        'Authorization' => "Bearer #{@@users_credentials[user_id]['token']}",
+        'Authorization' => "Bearer #{token}",
         'Content-Type'  => 'application/json'
       }
     end
@@ -420,6 +433,80 @@ module RSpotify
     def saved_albums?(albums)
       albums_ids = albums.map(&:id)
       url = "me/albums/contains?ids=#{albums_ids.join ','}"
+      User.oauth_get(@id, url)
+    end
+
+    # Remove episodes from the user’s “Your Music” library.
+    #
+    # @param episodes [Array<Episode>] The episodes to remove. Maximum: 50.
+    # @return [Array<Episode>] The episodes removed.
+    #
+    # @example
+    #           episodes = user.saved_episodes
+    #
+    #           user.saved_episodes.size #=> 20
+    #           user.remove_episodes!(episodes)
+    #           user.saved_episodes.size #=> 0
+    def remove_episodes!(episodes)
+      episodes_ids = episodes.map(&:id)
+      url = "me/episodes?ids=#{episodes_ids.join ','}"
+      User.oauth_delete(@id, url)
+      episodes
+    end
+
+    # Save episodes to the user’s “Your Music” library.
+    #
+    # @param episodes [Array<Episode>] The episodes to save. Maximum: 50.
+    # @return [Array<Episode>] The episodes saved.
+    #
+    # @example
+    #           episodes = RSpotify::Episode.search('launeddas')
+    #
+    #           user.saved_episodes.size #=> 0
+    #           user.save_episodes!(episodes)
+    #           user.saved_episodes.size #=> 10
+    def save_episodes!(episodes)
+      episodes_ids = episodes.map(&:id)
+      url = "me/episodes"
+      request_body = { ids: episodes_ids }
+      User.oauth_put(@id, url, request_body.to_json)
+      episodes
+    end
+
+    # Returns the episodes saved in the Spotify user’s “Your Music” library.
+    #
+    # @param limit  [Integer] Maximum number of episodes to return. Maximum: 50. Minimum: 1. Default: 20.
+    # @param offset [Integer] The index of the first episode to return. Use with limit to get the next set of episodes. Default: 0.
+    # @param market [String]  Optional. An {http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 ISO 3166-1 alpha-2 country code}.
+    # @return [Array<Episode>]
+    #
+    # @example
+    #           episodes = user.saved_episodes
+    #           episodes.size       #=> 20
+    #           episodes.first.name #=> "Launeddas"
+    def saved_episodes(limit: 20, offset: 0, market: nil)
+      url = "me/episodes?limit=#{limit}&offset=#{offset}"
+      url << "&market=#{market}" if market
+      response = User.oauth_get(@id, url)
+      json = RSpotify.raw_response ? JSON.parse(response) : response
+
+      episodes = json['items'].select { |i| i['episode'] }
+
+      return response if RSpotify.raw_response
+      episodes.map { |a| Episode.new a['episode'] }
+    end
+
+    # Check if episodes are already saved in the Spotify user’s “Your Music” library. ** Only returns true if the episode was saved via me/episodes, not if you saved each track individually.
+    #
+    # @param episodes [Array<Episode>] The episodes to check. Maximum: 50.
+    # @return [Array<Boolean>] Array of booleans, in the same order in which the episodes were specified.
+    #
+    # @example
+    #           episodes = RSpotify::Episode.search('launeddas')
+    #           user.saved_episodes?(episodes) #=> [true, false, true...]
+    def saved_episodes?(episodes)
+      episodes_ids = episodes.map(&:id)
+      url = "me/episodes/contains?ids=#{episodes_ids.join ','}"
       User.oauth_get(@id, url)
     end
 

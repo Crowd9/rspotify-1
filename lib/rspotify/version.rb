@@ -1,3 +1,3 @@
 module RSpotify
-  VERSION = '2.9.2'.freeze
+  VERSION = '2.12.4'.freeze
 end
