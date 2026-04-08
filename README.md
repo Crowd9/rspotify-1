@@ -1,17 +1,19 @@
 # RSpotify
 
-[![Gem Version](https://badge.fury.io/rb/rspotify.svg)](http://badge.fury.io/rb/rspotify)
+[![Gem Version](https://badge.fury.io/rb/rspotify.svg)](https://badge.fury.io/rb/rspotify)
 [![Build Status](https://github.com/guilhermesad/rspotify/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/guilhermesad/rspotify/actions)
 
-This is a ruby wrapper for the [Spotify Web API](https://developer.spotify.com/web-api).
+This is a Ruby wrapper for the [Spotify Web API](https://developer.spotify.com/documentation/web-api).
 
 ## Features
 
-* [Full documentation](http://www.rubydoc.info/github/guilhermesad/rspotify/master)
+* [Full documentation](https://www.rubydoc.info/github/guilhermesad/rspotify/master)
 * Full API Endpoint coverage
 * OAuth and other authorization flows
 
 ## Installation
+
+RSpotify supports Ruby 3.3 and newer.
 
 Add this line to your application's Gemfile:
 
@@ -31,7 +33,7 @@ RSpotify was designed with usability as its primary goal, so that you can forget
 
 You can write things like `my_playlist.tracks.sort_by(&:popularity).last.album` without having to think which API calls must be done. RSpotify fills the gaps for you.
 
-Below are some basic usage examples. Check the [documentation](http://rubydoc.info/github/guilhermesad/rspotify/master/frames) for the complete reference.
+Below are some basic usage examples. Check the [documentation](https://rubydoc.info/github/guilhermesad/rspotify/master/frames) for the complete reference.
 
 ```ruby
 require 'rspotify'
@@ -90,7 +92,7 @@ my_tracks = RSpotify::Track.find(ids)
 my_tracks.size #=> 2
 ```
 
-Some data require authentication to be accessed, such as playlists' details. You can easily get your credentials [here](https://developer.spotify.com/my-applications).
+Some data require authentication to be accessed, such as playlist details. You can create an app and get your credentials from the [Spotify developer dashboard](https://developer.spotify.com/dashboard).
 
 Then just copy and paste them like so:
 
@@ -137,7 +139,7 @@ You might want your application to access a user's Spotify account.
 
 For instance, suppose you want your app to create playlists for the user based on their taste, or to add a feature that syncs user's playlists with some external app.
 
-If so, add the following to your application (Remember to [get your credentials](https://developer.spotify.com/my-applications))
+If so, add the following to your application after creating an app in the [Spotify developer dashboard](https://developer.spotify.com/dashboard):
 
 ```ruby
 # config/application.rb
@@ -157,9 +159,9 @@ end
 OmniAuth.config.allowed_request_methods = [:post, :get]
 ```
 
-You should replace the scope values for the ones your own app will require from the user. You can see the list of available scopes in [here](https://developer.spotify.com/documentation/general/guides/authorization/scopes/).
+You should replace the scope values with the ones your app actually requires. You can see the list of available scopes in the [Spotify scope reference](https://developer.spotify.com/documentation/web-api/concepts/scopes).
 
-Next, make a link so the user can log in with his Spotify account:
+Next, make a link so the user can log in with their Spotify account:
 
 ```ruby
 <%= link_to 'Sign in with Spotify', '/auth/spotify', method: :post %>
@@ -173,7 +175,7 @@ And create a route to receive the callback:
 get '/auth/spotify/callback', to: 'users#spotify'
 ```
 
-Remember you need to tell Spotify this address is white-listed. You can do this by adding it to the Redirect URIs list in your [application page](https://developer.spotify.com/my-applications). An example of Redirect URI would be http://localhost:3000/auth/spotify/callback.
+Remember to add this address to the Redirect URIs list for your app in the [Spotify developer dashboard](https://developer.spotify.com/dashboard). For local development, a common Redirect URI is `http://localhost:3000/auth/spotify/callback`.
 
 Finally, create a new RSpotify User with the response received:
 
