@@ -200,9 +200,11 @@ describe RSpotify::Playlist do
   end
 
   describe 'Playlist#tracks' do
-    use_vcr_cassette 'playlist:tracks:118430647:starred'
-
-    before { @tracks = starred_playlist.tracks(offset: 100, limit: 100) }
+    before do
+      @tracks = VCR.use_cassette('playlist:tracks:118430647:starred') do
+        starred_playlist.tracks(offset: 100, limit: 100)
+      end
+    end
 
     it 'should fetch more tracks correctly' do
       expect(@tracks)           .to be_an Array

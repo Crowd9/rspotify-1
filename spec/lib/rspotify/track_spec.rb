@@ -10,7 +10,7 @@ describe RSpotify::Track do
     end
 
     it 'should find track with correct attributes' do
-      expect(@track.available_markets)        .to include *%w(AD AT BE BG CA EE ES FR GR MC TW US)
+      expect(@track.available_markets)        .to include(*%w(AD AT BE BG CA EE ES FR GR MC TW US))
       expect(@track.disc_number)              .to eq 1
       expect(@track.duration_ms)              .to eq 272_394
       expect(@track.explicit)                 .to eq false
@@ -163,7 +163,7 @@ describe RSpotify::Track do
       expect(audio_features.instrumentalness).to eq 0.000263
       expect(audio_features.key).to              eq 5
       expect(audio_features.liveness).to         eq 0.217
-      expect(audio_features.loudness).to         eq -7.596
+      expect(audio_features.loudness).to         eq(-7.596)
       expect(audio_features.mode).to             eq 1
       expect(audio_features.speechiness).to      eq 0.0323
       expect(audio_features.tempo).to            eq 85.030

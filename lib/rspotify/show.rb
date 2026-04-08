@@ -1,5 +1,4 @@
 module RSpotify
-
   # @attr [Array<String>] available_markets   A list of the countries in which the show can be played, identified by their ISO 3166-1 alpha-2 code.
   # @attr [Array<Hash>]   copyrights          The copyright statements of the show.
   # @attr [String]        description         A description of the show. HTML tags are stripped away from this field, use html_description field in case HTML tags are needed.
@@ -11,7 +10,7 @@ module RSpotify
   # @attr [String]        media_type          The media type of the show.
   # @attr [String]        name                The name of the show.
   # @attr [String]        publisher           The publisher of the show.
-class Show < Base
+  class Show < Base
 
     # Returns Show object(s) with id(s) provided
     #
@@ -23,10 +22,10 @@ class Show < Base
     #           show = RSpotify::Show.find('3Z6JdCS2d0eFEpXHKI6WqH')
     #           show.class #=> RSpotify::Show
     #           show.name  #=> "Consider This from NPR"
-    def self.find(ids, market: nil )
+    def self.find(ids, market: nil)
       super(ids, 'show', market: market)
     end
-    
+
     # Returns array of Show objects matching the query. It's also possible to find the total number of search results for the query
     #
     # @param query  [String]  The search query's keywords. See the q description in {https://developer.spotify.com/web-api/search-item here} for details.
@@ -76,7 +75,7 @@ class Show < Base
     # @example
     #           show = RSpotify::Show.find('3Z6JdCS2d0eFEpXHKI6WqH')
     #           show.episodes.first.name #=> "Colin Powell's Complicated Legacy"
-    def episodes(limit: 20, offset: 0, market: nil )
+    def episodes(limit: 20, offset: 0, market: nil)
       last_episode = offset + limit - 1
       if @episodes_cache && last_episode < 20 && !RSpotify.raw_response
         return @episodes_cache[offset..last_episode]
@@ -93,6 +92,7 @@ class Show < Base
       episodes.map! { |e| Episode.new e }
       @episodes_cache = episodes if limit == 20 && offset == 0
       return response if RSpotify.raw_response
+
       episodes
     end
 

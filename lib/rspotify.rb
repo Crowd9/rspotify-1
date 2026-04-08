@@ -17,5 +17,4 @@ module RSpotify
   autoload :Track,              'rspotify/track'
   autoload :TrackLink,          'rspotify/track_link'
   autoload :User,               'rspotify/user'
-  autoload :Show,               'rspotify/show'
 end
